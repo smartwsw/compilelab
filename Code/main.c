@@ -12,9 +12,15 @@ int main(int argc, char** argv) {
 		perror (argv[1]);
 		return 1;
 	}
+	errornum = 0;
 	yyrestart(f);
 	yyparse();
-	print(root, 0);
+	if (errornum == 0 && root != NULL) {
+		print(root, 0);
+	}
+	else {
+		printf("Total errors: %d\n", errornum);
+	}
 	return 0;
 }
 

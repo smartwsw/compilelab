@@ -2,7 +2,7 @@
 #define YYSTYPE struct Node*
 #include "lex.yy.c"
 #include <stdio.h>
-int yyerror(char* msg);
+	int yyerror(char* msg);
 %}
 
 %token INT
@@ -82,6 +82,10 @@ ExtDef		:	Specifier ExtDecList SEMI
 					addChild($$, $1);
 					addChild($$, $2);
 					addChild($$, $3);
+				}
+			|	Specifier error
+				{
+					fprintf(stderr, "Missing \";\".\n");
 				}
 			;
 ExtDecList	:	VarDec
@@ -204,6 +208,10 @@ CompSt		:	LC DefList StmtList RC
 					addChild($$, $3);
 					addChild($$, $4);
 				}
+			|	error RC
+				{
+					fprintf(stderr, "Invalid Statements.\n");
+				}
 			;
 StmtList	:	Stmt StmtList
 				{
@@ -260,6 +268,26 @@ Stmt		:	Exp SEMI
 					addChild($$, $4);
 					addChild($$, $5);
 				}
+			|	Exp LB error SEMI
+				{
+					fprintf(stderr, "Missing \"]\".\n");
+				}
+			|	IF LP Exp RP error ELSE Stmt
+				{
+					fprintf(stderr, "Missing \";\".\n");
+				}
+			|	LP Exp error SEMI
+				{
+					fprintf(stderr, "Missing \")\".\n");
+				}
+			|	WHILE LP Exp RP error LC DefList StmtList RC
+				{
+					fprintf(stderr, "Invalid experission.\n");
+				}
+			|	error SEMI
+				{
+					fprintf(stderr, "Invalid statement.\n");
+				}
 			;
 
 //LocalDefinitions
@@ -278,6 +306,10 @@ Def			:	Specifier DecList SEMI
 					addChild($$, $1);
 					addChild($$, $2);
 					addChild($$, $3);
+				}
+			|	Specifier error SEMI
+				{
+					fprintf(stderr, "Missing \",\".\n");
 				}
 			;
 DecList		:	Dec
@@ -451,6 +483,7 @@ Args        : Exp COMMA Args
 %%
 
 int yyerror(char* msg) {
-	printf("Error type B at line %d: ", yylineno);
+	fprintf(stderr, "Error type B at line %d: ", yylineno, msg);
+	errornum++;
 	return 0;
 }
