@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 		print(root, 0);
 	}
 	else {
-		printf("Total errors: %d\n", errornum);
+		printf("\e[31mTotal errors: %d\e[0m\n", errornum);
 	}
 	return 0;
 }

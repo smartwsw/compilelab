@@ -14,18 +14,26 @@ eoct		0[0-9]+
 ehex		0[xX][0-9a-fA-F]*[g-zG-Z][0-9A-Za-z]*
 %option yylineno
 %%
-{space}+					{	printf("This is a space!\n");}	
+{space}+					{	}	
 {float}						{ 
 								char buffer[64] = "FLOAT: ";
 								strcat(buffer, yytext);
 								yylval = newNode(buffer);  
 								return FLOAT;
 							}
-[1-9][0-9]*|0				{ 
-								char buffer[64] = "INT: ";
-								strcat(buffer, yytext);
-								yylval = newNode(buffer); 
-								return INT; 
+{oct}						{
+								int val;
+								char buffer[64];
+								sscanf(yytext, "0%o", &val);
+								sprintf(buffer, "INT: %d", val);
+								yylval = newNode(buffer);
+								return INT;
+							}
+{ehex}						{
+								fprintf(stderr, "Error type A at line %d: Illegal hex num \"%s\"\n", yylineno, yytext);
+								errornum++;
+								yylval = newNode("INT: ERROR");
+								return INT;
 							}
 {hex}						{
 								int val;
@@ -37,23 +45,17 @@ ehex		0[xX][0-9a-fA-F]*[g-zG-Z][0-9A-Za-z]*
 									sscanf(yytext, "0x%x", &val);
 								}
 								sprintf(buffer, "INT: %d", val);
+								yylval = newNode(buffer);
 								return INT;
 							}
-{oct}						{
-								int val;
-								char buffer[64];
-								sscanf(yytext, "0%o", &val);
-								sprintf(buffer, "INT: %d", val);
-								return INT;
+[1-9][0-9]*|0				{ 
+								char buffer[64] = "INT: ";
+								strcat(buffer, yytext);
+								yylval = newNode(buffer); 
+								return INT; 
 							}
 {eoct}						{	
 								fprintf(stderr, "Error type A at line %d: Illegal oct num \"%s\"\n", yylineno, yytext);
-								errornum++;
-								yylval = newNode("INT: ERROR");
-								return INT;
-							}
-{ehex}						{
-								fprintf(stderr, "Error type A at line %d: Illegal hex num \"%s\"\n", yylineno, yytext);
 								errornum++;
 								yylval = newNode("INT: ERROR");
 								return INT;
@@ -86,11 +88,13 @@ ehex		0[xX][0-9a-fA-F]*[g-zG-Z][0-9A-Za-z]*
 {id}						{ 
 								char buffer[64] = "ID: ";
 								strcat(buffer, yytext);
-								yylval = newNode(buffer); return ID;}
+								yylval = newNode(buffer); 
+								return ID;
+							}
 .							{ 
 								fprintf(stderr, "Error type A at Line %d: Interesting characters \'%s\'\n", yylineno, yytext); 
 								errornum++;
-}
+							}
 
 %%
 /*

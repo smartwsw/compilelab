@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "tree.h"
 //#include "syntax.tab.h"
 
@@ -14,7 +15,7 @@ struct Node *newNode(char *type) {
 	new->line = yylineno;
 	strcpy(new->type, type);
 	new->val = 0;
-	printf("%d, %s\n", new->line, type);
+//	printf("%d, %s\n", new->line, type);
 	return new;
 }
 

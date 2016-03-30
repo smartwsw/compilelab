@@ -3,6 +3,7 @@
 #include "lex.yy.c"
 #include <stdio.h>
 	int yyerror(char* msg);
+	int yyparse();
 %}
 
 %token INT
@@ -85,7 +86,7 @@ ExtDef		:	Specifier ExtDecList SEMI
 				}
 			|	Specifier error
 				{
-					fprintf(stderr, "Missing \";\".\n");
+					fprintf(stderr, "Expected \";\".\n");
 				}
 			;
 ExtDecList	:	VarDec
@@ -129,6 +130,10 @@ StructSpecifier	:	STRUCT OptTag LC DefList RC
 						$$ = newNode("StructSpecifier");
 						addChild($$, $1);
 						addChild($$, $2);
+					}
+				| STRUCT OptTag LC DefList error
+					{
+						fprintf(stderr, "Expecting \"}\".\n");
 					}
 				;
 OptTag		:	ID
@@ -175,6 +180,10 @@ FunDec		:	ID LP VarList RP
 					addChild($$, $1);
 					addChild($$, $2);
 					addChild($$, $3);
+				}
+			|	ID LP error
+				{
+					fprintf(stderr, "Expecting \")\".\n");
 				}
 			;
 VarList		:	ParamDec COMMA VarList
@@ -270,15 +279,15 @@ Stmt		:	Exp SEMI
 				}
 			|	Exp LB error SEMI
 				{
-					fprintf(stderr, "Missing \"]\".\n");
+					fprintf(stderr, "Expected \"]\".\n");
 				}
 			|	IF LP Exp RP error ELSE Stmt
 				{
-					fprintf(stderr, "Missing \";\".\n");
+					fprintf(stderr, "Expected \";\".\n");
 				}
 			|	LP Exp error SEMI
 				{
-					fprintf(stderr, "Missing \")\".\n");
+					fprintf(stderr, "Expected \")\".\n");
 				}
 			|	WHILE LP Exp RP error LC DefList StmtList RC
 				{
@@ -309,7 +318,7 @@ Def			:	Specifier DecList SEMI
 				}
 			|	Specifier error SEMI
 				{
-					fprintf(stderr, "Missing \",\".\n");
+					fprintf(stderr, "Expected \",\".\n");
 				}
 			;
 DecList		:	Dec
@@ -431,6 +440,10 @@ Exp         : Exp ASSIGNOP Exp
                     addChild($$, $2);
                     addChild($$, $3);
                 }
+			| ID LP error
+				{
+					fprintf(stderr, "Expected \")\".\n");
+				}
             | Exp LB Exp RB
                 {
                     $$=newNode("Exp");
@@ -465,6 +478,10 @@ Exp         : Exp ASSIGNOP Exp
                 {
                     fprintf(stderr, "Invalid expression.\n");
                 }
+			| LP error
+				{
+					fprintf(stderr, "Expected \")\".\n");
+				}
             ;
 Args        : Exp COMMA Args
                 {
