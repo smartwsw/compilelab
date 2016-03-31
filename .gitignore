@@ -1,4 +1,8 @@
 *.o
 *.tmp
 lex.yy.c
+parser
+syntax.output
+syntax.tab.*
+tags
 
